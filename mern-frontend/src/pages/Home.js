@@ -8,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/artworks")
+      .get("http://localhost:5000/api/artworks")
       .then((res) => setArtworks(res.data))
       .catch((err) => console.error("Failed to fetch artworks:", err));
   }, [location]);
