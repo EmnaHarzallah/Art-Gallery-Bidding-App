@@ -13,13 +13,13 @@ export default function NavBar({ onLogout }) {
         color: "#fff",
         marginBottom: 32,
         borderRadius: 8,
-        maxWidth: 700,
-        margin: "32px auto 0 auto",
+        maxWidth: 1200,
+        margin: "40px auto 0 auto",
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
       }}
     >
       <span style={{ fontWeight: "bold", fontSize: 20 }}>
-        Art Galley Bidding App
+        Art Gallery Bidding App
       </span>
       <div>
         <Link
@@ -29,19 +29,19 @@ export default function NavBar({ onLogout }) {
           Home
         </Link>
         <Link
-          to="/AddArt"
-          style={{ color: "#fff", marginRight: 16, textDecoration: "none" }}
-        >
-          Add Art
-        </Link>
-        <Link
           to="/Profile"
           style={{ color: "#fff", marginRight: 16, textDecoration: "none" }}
         >
           Profile
         </Link>
-        <button
-          onClick={onLogout}
+        <Link
+          to="/add-art"
+          style={{ color: "#fff", marginRight: 16, textDecoration: "none" }}
+        >
+          Add Art
+        </Link>
+        <Link
+          to="/login"
           style={{
             background: "transparent",
             border: "none",
@@ -51,7 +51,7 @@ export default function NavBar({ onLogout }) {
           }}
         >
           Logout
-        </button>
+        </Link>
       </div>
     </nav>
   );

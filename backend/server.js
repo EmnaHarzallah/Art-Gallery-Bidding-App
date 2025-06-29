@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const ArtworkRouter = require("./routes/ArtworkRouter");
+const AuthRoutes = require("./routes/AuthRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,6 +15,7 @@ dotenv.config();
 
 // Routes
 app.use("/api/artworks", ArtworkRouter);
+app.use("/api/user", AuthRoutes);
 
 // Connexion MongoDB
 mongoose

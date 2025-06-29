@@ -106,20 +106,6 @@ exports.getArtworksByArtist = async (req, res) => {
   }
 };
 
-exports.getArtworksByYear = async (req, res) => {
-  try {
-    const artworks = await artwork.find({ year: req.params.year });
-    if (artworks.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No artworks found from this year" });
-    }
-    res.status(200).json(artworks);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 exports.getArtworksByPriceRange = async (req, res) => {
   try {
     const { minPrice, maxPrice } = req.query;
@@ -130,23 +116,6 @@ exports.getArtworksByPriceRange = async (req, res) => {
       return res
         .status(404)
         .json({ message: "No artworks found in this price range" });
-    }
-    res.status(200).json(artworks);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-exports.getArtworksByCoins = async (req, res) => {
-  try {
-    const { minCoins, maxCoins } = req.query;
-    const artworks = await artwork.find({
-      Coins: { $gte: minCoins, $lte: maxCoins },
-    });
-    if (artworks.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No artworks found in this coin range" });
     }
     res.status(200).json(artworks);
   } catch (error) {

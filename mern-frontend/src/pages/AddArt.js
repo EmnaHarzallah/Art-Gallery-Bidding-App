@@ -5,6 +5,7 @@ export default function AddArt() {
   const [artwork, setArtwork] = useState({
     title: "",
     imageUrl: "",
+    artist: "",
     tags: "Painting",
     startingPrice: "",
   });
@@ -41,6 +42,7 @@ export default function AddArt() {
       setArtwork({
         title: "",
         imageUrl: "",
+        artist: "",
         tags: "Painting",
         startingPrice: "",
       });
@@ -80,6 +82,20 @@ export default function AddArt() {
           name="title"
           placeholder="Title"
           value={artwork.title}
+          onChange={handleChange}
+          required
+          style={{
+            padding: "12px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+          }}
+        />
+
+        <input
+          type="text"
+          name="artist"
+          placeholder="Artist"
+          value={artwork.artist}
           onChange={handleChange}
           required
           style={{

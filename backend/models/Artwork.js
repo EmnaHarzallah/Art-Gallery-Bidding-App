@@ -11,11 +11,7 @@ const artworkSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  year: {
-    type: Number,
-    required: true,
-  },
-  Coins: {
+  startingPrice: {
     type: Number,
     required: true,
   },
@@ -25,10 +21,6 @@ const artworkSchema = new mongoose.Schema({
   },
   tags: {
     type: [String],
-    required: true,
-  },
-  ownerId: {
-    type: String,
     required: true,
   },
 });

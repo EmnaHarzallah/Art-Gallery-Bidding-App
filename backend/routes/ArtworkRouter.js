@@ -17,11 +17,7 @@ router.get("/search", ArtworkController.getArtworksByTitle);
 router.get("/tag/:tag", ArtworkController.getArtworksByTag);
 // Route to get artworks by artist
 router.get("/artist/:artist", ArtworkController.getArtworksByArtist);
-// Route to get artworks by year
-router.get("/year/:year", ArtworkController.getArtworksByYear);
-// Route to get artworks by coins
-router.get("/coins/:coins", ArtworkController.getArtworksByCoins);
-// Route to get artworks by price range
+
 router.get("/price/:min/:max", ArtworkController.getArtworksByPriceRange);
 
 module.exports = router;
