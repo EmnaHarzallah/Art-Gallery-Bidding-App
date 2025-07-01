@@ -2,12 +2,28 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Add useNavigate
 import { useSignup } from "../hooks/useSignup";
 import { useEffect } from "react";
+import axios from "axios";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { signup, error, isLoading, success } = useSignup();
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const { signup, isLoading, success } = useSignup();
   const navigate = useNavigate(); // Initialize navigate
+
+  const handleRegistration = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    const res = await axios.post("http://localhost:5000/api/user", {
+      username,
+      email,
+      password,
+    });
+    localStorage.setItem("token", res.data.token);
+  };
 
   useEffect(() => {
     if (success) {
@@ -17,7 +33,7 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await signup(email, password);
+    const success = await signup(username, email, password);
     if (success) {
       navigate("/"); // Redirect to home on success
     }
@@ -42,6 +58,22 @@ const Signup = () => {
         </Link>
       </div>
       <form onSubmit={handleSubmit}>
+        <p>Username </p>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username"
+          style={{
+            width: "100%",
+            padding: 8,
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            marginBottom: 8,
+          }}
+          required
+        />
+        <p>Email Address </p>
         <input
           type="text"
           value={email}
@@ -56,11 +88,27 @@ const Signup = () => {
           }}
           required
         />
+        <p>Password </p>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
+          style={{
+            width: "100%",
+            padding: 8,
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            marginBottom: 16,
+          }}
+          required
+        />
+        <p>Confirm your password </p>
+        <input
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm Password"
           style={{
             width: "100%",
             padding: 8,
@@ -77,9 +125,9 @@ const Signup = () => {
             width: "100%",
             padding: "8px 16px",
             borderRadius: 4,
-            border: "1px solid #007bff",
-            background: "#007bff",
-            color: "#fff",
+            border: "1px solid #820808",
+            background: "#820808",
+            color: "#FFFFFF",
             cursor: "pointer",
             opacity: isLoading ? 0.7 : 1,
           }}

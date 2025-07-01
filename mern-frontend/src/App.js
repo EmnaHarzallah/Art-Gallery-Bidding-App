@@ -33,21 +33,28 @@ function App() {
 
   // Protected Route Component
   const ProtectedRoute = ({ children }) => {
-    if (!isAuthenticated) {
+    const token = localStorage.getItem("token");
+    if (!token) {
       return <Navigate to="/login" replace />;
     }
     return children;
   };
-
   return (
     <div>
       <BrowserRouter>
-        <ProtectedRoute>
+        {isAuthenticated && (
           <NavBar isAuthenticated={isAuthenticated} onLogout={handleLogout} />
-        </ProtectedRoute>
+        )}
 
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/add-art"
@@ -78,14 +85,10 @@ function App() {
             }
           />
 
-          <Route
-            path="/signup"
-            element={ <Signup />}}
-          />
+          <Route path="/signup" element={<Signup />} />
         </Routes>
-        <ProtectedRoute>
-          <Footer />
-        </ProtectedRoute>
+
+        {isAuthenticated && <Footer isAuthenticated={isAuthenticated} />}
       </BrowserRouter>
     </div>
   );

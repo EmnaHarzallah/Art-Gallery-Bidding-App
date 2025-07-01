@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const Artwork = require("./Artwork");
 const Schema = mongoose.Schema;
 const userSchema = new mongoose.Schema({
-  Fullname: {
+  username: {
     type: String,
     required: true,
   },

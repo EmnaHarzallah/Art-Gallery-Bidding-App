@@ -2,9 +2,9 @@ const User = require("../models/User");
 const { hashPassword } = require("../utils/PasswordUtils");
 const { generateToken } = require("../utils/jwtUtils");
 
-exports.register = async (req, res) => {
+exports.signup = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -17,6 +17,7 @@ exports.register = async (req, res) => {
 
     // Create user
     const user = await User.create({
+      username,
       email,
       password: hashedPassword,
     });

@@ -5,7 +5,7 @@ const UserController = require("../controllers/UserController");
 const { authenticate } = require("../middleware/AuthMiddleware");
 
 // Public routes
-router.post("/register", UserController.register);
+router.post("/signup", UserController.signup);
 router.post("/login", UserController.login);
 
 // Protected route example

@@ -19,7 +19,7 @@ const Profile = () => {
   const ErrorMessage = ({ message }) => (
     <div className="error-message">{message}</div>
   );
-  const defaultAvatar = "/default-avatar.htm"; // Make sure this file exists in your public folder
+  const defaultAvatar = "./assets/default-avatar.png";
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -27,7 +27,6 @@ const Profile = () => {
         setLoading(true);
         setError(null);
 
-        // Use Promise.all to fetch both data in parallel
         const [userResponse, artworksResponse] = await Promise.all([
           axios.get(`http://localhost:3000/api/users/${userId}`),
           axios.get(`http://localhost:3000/api/artworks?artist=${userId}`),
@@ -36,7 +35,6 @@ const Profile = () => {
         setProfileUser(userResponse.data);
         setArtworks(artworksResponse.data);
 
-        // Check if current user is following this profile
         if (currentUser) {
           const followStatus = await axios.get(
             `http://localhost:3000/api/users/${userId}/follow-status`,

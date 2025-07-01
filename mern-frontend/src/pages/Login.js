@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { useSignup } from "../hooks/useSignup";
 
 const Login = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const { isLoading } = useSignup();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ const Login = ({ onLogin }) => {
 
   return (
     <div
-      class="px-6 py-24 bg-gradient-to-b from-white via-[#f4f4f4] to-[#e5f7f8] text-[#1e1e1e]"
+      className="px-6 py-24 bg-gradient-to-b from-white via-[#f4f4f4] to-[#e5f7f8] text-[#1e1e1e]"
       style={{
         maxWidth: 400,
         margin: "40px auto",
@@ -80,16 +82,14 @@ const Login = ({ onLogin }) => {
         <button
           type="submit"
           style={{
-            padding: "12px",
-            backgroundColor: "#820808",
-            color: "#fff",
-            borderRadius: "4px",
-            border: "none",
+            width: "100%",
+            padding: "8px 16px",
+            borderRadius: 4,
+            border: "1px solid #820808",
+            background: "#820808",
+            color: "#FFFFFF",
             cursor: "pointer",
-            fontWeight: "bold",
-            fontSize: "16px",
-            marginTop: "16px",
-            opacity: 1,
+            opacity: isLoading ? 0.7 : 1,
           }}
         >
           Login
