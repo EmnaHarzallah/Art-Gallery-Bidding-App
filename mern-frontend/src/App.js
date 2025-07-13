@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -7,90 +7,62 @@ import AddArt from "./pages/AddArt";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
+import { useAuthContext } from "./hooks/useAuthContext";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Check authentication status on initial load
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const handleLogin = (token) => {
-    localStorage.setItem("token", token);
-    setIsAuthenticated(true);
-  };
+  const { user, dispatch } = useAuthContext();
+  const isAuthenticated = !!user;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    setIsAuthenticated(false);
-    console.log("User logged out");
-    // You might want to redirect here: return <Navigate to="/login" />;
+    localStorage.removeItem("user");
+    dispatch({ type: "LOGOUT" });
+    window.location.href = "/login";
   };
 
-  // Protected Route Component
   const ProtectedRoute = ({ children }) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
     }
     return children;
   };
+
   return (
-    <div>
-      <BrowserRouter>
-        {isAuthenticated && (
-          <NavBar isAuthenticated={isAuthenticated} onLogout={handleLogout} />
-        )}
-
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/add-art"
-            element={
-              <ProtectedRoute>
-                <AddArt />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/profile/:userId"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/login"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/" replace />
-              ) : (
-                <Login onLogin={handleLogin} />
-              )
-            }
-          />
-
-          <Route path="/signup" element={<Signup />} />
-        </Routes>
-
-        {isAuthenticated && <Footer isAuthenticated={isAuthenticated} />}
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      {isAuthenticated && <NavBar onLogout={handleLogout} />}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/add-art"
+          element={
+            <ProtectedRoute>
+              <AddArt />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/:id"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
+        />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+      {isAuthenticated && <Footer />}
+    </BrowserRouter>
   );
 }
 

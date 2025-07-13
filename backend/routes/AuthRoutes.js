@@ -9,10 +9,6 @@ router.post("/signup", UserController.signup);
 router.post("/login", UserController.login);
 
 // Protected route example
-router.get("/profile", authenticate, (req, res) => {
-  const user = req.user.toObject();
-  delete user.password;
-  res.json(user);
-});
+router.get("/profile/:username", UserController.getUserById);
 
 module.exports = router;

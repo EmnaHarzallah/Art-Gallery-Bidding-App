@@ -1,24 +1,39 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { useSignup } from "../hooks/useSignup";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const Login = ({ onLogin }) => {
+  const { dispatch } = useAuthContext();
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  const { isLoading } = useSignup();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("http://localhost:5000/api/user", {
-        email,
-        password,
+      const response = await axios.post(
+        "http://localhost:5000/api/user/login",
+        {
+          email,
+          password,
+        }
+      );
+
+      const receivedToken = response.data.token;
+      const loggedInUser = response.data.user;
+
+      // stockage local
+      localStorage.setItem("token", receivedToken);
+      localStorage.setItem("user", JSON.stringify(loggedInUser));
+
+      // mise à jour du contexte
+      dispatch({
+        type: "LOGIN",
+        payload: { user: loggedInUser },
       });
-      localStorage.setItem("token", res.data.token);
+
       if (onLogin) onLogin();
     } catch (err) {
       setError(err.response?.data?.error || "Login failed");
@@ -27,7 +42,6 @@ const Login = ({ onLogin }) => {
 
   return (
     <div
-      className="px-6 py-24 bg-gradient-to-b from-white via-[#f4f4f4] to-[#e5f7f8] text-[#1e1e1e]"
       style={{
         maxWidth: 400,
         margin: "40px auto",
@@ -46,8 +60,6 @@ const Login = ({ onLogin }) => {
       </div>
       <form onSubmit={handleSubmit}>
         <input
-          id="email"
-          name="email"
           type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -63,8 +75,6 @@ const Login = ({ onLogin }) => {
           }}
         />
         <input
-          id="password"
-          name="password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -87,9 +97,8 @@ const Login = ({ onLogin }) => {
             borderRadius: 4,
             border: "1px solid #820808",
             background: "#820808",
-            color: "#FFFFFF",
+            color: "#fff",
             cursor: "pointer",
-            opacity: isLoading ? 0.7 : 1,
           }}
         >
           Login

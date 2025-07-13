@@ -1,210 +1,175 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useParams, Link } from "react-router-dom";
+import { Spinner, Alert } from "react-bootstrap";
+import "./Profile.css";
 import { useAuthContext } from "../hooks/useAuthContext";
 
-const Profile = () => {
-  const { userId } = useParams();
-  const navigate = useNavigate();
-  const { user: currentUser, dispatch } = useAuthContext();
-  const [profileUser, setProfileUser] = useState(null);
-  const [artworks, setArtworks] = useState([]);
+const defaultAvatar = "/default-avatar.png";
+const placeholderArtwork = "/place-holder.webp";
+
+export default function Profile() {
+  const { user } = useAuthContext();
+  const { _id } = useParams();
+  const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isFollowing, setIsFollowing] = useState(false);
-  // Temporary replacements in Profile.js
-  const LoadingSpinner = () => (
-    <div className="loading-spinner">Loading...</div>
-  );
-  const ErrorMessage = ({ message }) => (
-    <div className="error-message">{message}</div>
-  );
-  const defaultAvatar = "./assets/default-avatar.png";
+  const current_id = user ? user._id : null;
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchProfile = async () => {
+      console.log("Fetching profile for:", _id);
       try {
         setLoading(true);
         setError(null);
-
-        const [userResponse, artworksResponse] = await Promise.all([
-          axios.get(`http://localhost:3000/api/users/${userId}`),
-          axios.get(`http://localhost:3000/api/artworks?artist=${userId}`),
-        ]);
-
-        setProfileUser(userResponse.data);
-        setArtworks(artworksResponse.data);
-
-        if (currentUser) {
-          const followStatus = await axios.get(
-            `http://localhost:3000/api/users/${userId}/follow-status`,
-            {
-              headers: { Authorization: `Bearer ${currentUser.token}` },
-            }
-          );
-          setIsFollowing(followStatus.data.isFollowing);
-        }
+        const response = await axios.get(
+          `http://localhost:3000/api/user/profile/${_id}`,
+          { timeout: 5000 }
+        );
+        console.log("Profile data received:", response.data);
+        setProfileData(response.data);
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to load profile");
-        console.error("Profile load error:", err);
-
-        // If unauthorized, redirect to login
-        if (err.response?.status === 401) {
-          dispatch({ type: "LOGOUT" });
-          navigate("/login");
-        }
+        console.error("Profile fetch error:", err.message || err);
+        setError("Failed to load profile. Please try again later.");
       } finally {
         setLoading(false);
+        console.log("Loading set to false");
       }
     };
 
-    fetchProfileData();
-  }, [userId, currentUser, dispatch, navigate]);
-
-  const handleFollow = async () => {
-    try {
-      const response = await axios.post(
-        `http://localhost:3000/api/users/${userId}/follow`,
-        {},
-        { headers: { Authorization: `Bearer ${currentUser.token}` } }
-      );
-      setIsFollowing(true);
-      setProfileUser((prev) => ({
-        ...prev,
-        followers: prev.followers + 1,
-      }));
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to follow user");
+    if (_id) {
+      fetchProfile();
+    } else {
+      setError("No _id provided");
+      setLoading(false);
     }
-  };
+  }, [_id]);
 
-  const handleUnfollow = async () => {
-    try {
-      const response = await axios.post(
-        `http://localhost:3000/api/users/${userId}/unfollow`,
-        {},
-        { headers: { Authorization: `Bearer ${currentUser.token}` } }
-      );
-      setIsFollowing(false);
-      setProfileUser((prev) => ({
-        ...prev,
-        followers: prev.followers - 1,
-      }));
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to unfollow user");
-    }
-  };
-
-  if (loading) return <LoadingSpinner fullPage />;
-  if (error)
+  if (loading) {
     return (
-      <ErrorMessage message={error} onRetry={() => window.location.reload()} />
+      <div className="profile-loading">
+        <Spinner animation="border" />
+        <p>Loading profile...</p>
+      </div>
     );
-  if (!profileUser) return <ErrorMessage message="User not found" />;
+  }
 
-  const isCurrentUser = currentUser?.id === profileUser._id;
+  if (error) {
+    return (
+      <Alert variant="danger" className="profile-error">
+        {error}
+      </Alert>
+    );
+  }
+
+  const own_artworks = profileData?.own_artworks || [];
+  const bidding = profileData?.bidding || [];
 
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <div className="avatar-section">
-          <img
-            src={profileUser.avatar || defaultAvatar}
-            alt={`${profileUser.name}'s avatar`}
-            className="profile-avatar"
-            onError={(e) => {
+        <img
+          src={profileData.avatar || defaultAvatar}
+          alt={`${profileData._id}'s avatar`}
+          className="profile-avatar"
+          onError={(e) => {
+            if (e.target.src !== defaultAvatar) {
+              e.target.onerror = null;
               e.target.src = defaultAvatar;
-            }}
-          />
-          {isCurrentUser ? (
-            <button
-              className="edit-profile-btn"
-              onClick={() => navigate("/settings/profile")}
-            >
-              Edit Profile
-            </button>
-          ) : (
-            currentUser && (
-              <button
-                className={`follow-btn ${isFollowing ? "following" : ""}`}
-                onClick={isFollowing ? handleUnfollow : handleFollow}
-              >
-                {isFollowing ? "Following" : "Follow"}
-              </button>
-            )
-          )}
-        </div>
-
+            }
+          }}
+        />
         <div className="profile-info">
-          <h1>{profileUser.name}</h1>
-          <p className="username">@{profileUser.username}</p>
-          <p className="bio">{profileUser.bio || "No bio yet"}</p>
-
-          <div className="stats">
-            <div className="stat">
-              <span className="stat-number">{artworks.length}</span>
-              <span className="stat-label">Artworks</span>
+          <h2>{profileData.username}</h2>
+          <p className="profile-bio">
+            {profileData.bio || "This user hasn't written a bio yet."}
+          </p>
+          {profileData.coins && (
+            <div className="profile-coins">
+              <span>🪙 {profileData.coins.toLocaleString()} coins</span>
             </div>
-            <Link to={`/profile/${userId}/followers`} className="stat">
-              <span className="stat-number">{profileUser.followers || 0}</span>
-              <span className="stat-label">Followers</span>
-            </Link>
-            <Link to={`/profile/${userId}/following`} className="stat">
-              <span className="stat-number">{profileUser.following || 0}</span>
-              <span className="stat-label">Following</span>
-            </Link>
-          </div>
+          )}
         </div>
       </div>
 
-      <div className="artworks-section">
-        <h2>
-          {isCurrentUser ? "My Artworks" : `${profileUser.name}'s Artworks`}
-        </h2>
-
-        {artworks.length === 0 ? (
-          <div className="no-artworks">
-            <p>
-              {isCurrentUser
-                ? "You haven't uploaded any artworks yet"
-                : "No artworks yet"}
-            </p>
-            {isCurrentUser && (
-              <Link to="/upload" className="primary-btn">
-                Upload your first artwork
+      <div className="personal-artworks-section">
+        <h3>Personal Artwork Collection ({own_artworks.length})</h3>
+        {own_artworks.length === 0 ? (
+          <div className="empty-artworks">
+            <p>No artworks found in this collection.</p>
+            {_id === current_id && (
+              <Link to="/add-art" className="btn btn-primary">
+                Add Another Artwork
               </Link>
             )}
           </div>
         ) : (
           <div className="artworks-grid">
-            {artworks.map((artwork) => (
-              <div key={artwork._id} className="artwork-card">
-                <Link to={`/artwork/${artwork._id}`}>
+            {own_artworks.map((artwork) => (
+              <Link
+                to={`/artwork/${artwork._id}`}
+                key={artwork._id}
+                className="artwork-card"
+              >
+                <div className="artwork-image-container">
                   <img
                     src={artwork.imageURL}
                     alt={artwork.title}
-                    className="artwork-thumbnail"
-                    onError={(e) => {
-                      e.target.src = "/placeholder-artwork.jpg";
-                    }}
+                    className="artwork-image"
+                    onError={(e) => (e.target.src = placeholderArtwork)}
                   />
-                  <div className="artwork-info">
-                    <h3>{artwork.title}</h3>
-                    <p className="price">
-                      {artwork.startingPrice
-                        ? `$${artwork.startingPrice.toLocaleString()}`
-                        : "Not for sale"}
-                    </p>
-                    {artwork.sold && <span className="sold-badge">Sold</span>}
-                  </div>
-                </Link>
-              </div>
+                </div>
+                <div className="artwork-details">
+                  <h4 className="artwork-title">{artwork.title}</h4>
+                  <p className="artwork-price">
+                    {artwork.currentBid
+                      ? `Current bid: $${artwork.currentBid.toLocaleString()}`
+                      : artwork.startingPrice
+                      ? `Starting at $${artwork.startingPrice.toLocaleString()}`
+                      : "Not for sale"}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="bidding-artworks-section">
+        <h3>Bidding Artwork Collection ({bidding.length})</h3>
+        {bidding.length === 0 ? (
+          <div className="empty-artworks">
+            <p>No artworks found in this collection.</p>
+            {_id === current_id && (
+              <Link to="/add-art" className="btn btn-primary">
+                Add Another Artwork
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="artworks-grid">
+            {bidding.map((artwork) => (
+              <Link
+                to={`/artwork/${artwork._id}`}
+                key={artwork._id}
+                className="artwork-card"
+              >
+                <div className="artwork-image-container">
+                  <img
+                    src={artwork.imageURL}
+                    alt={artwork.title}
+                    className="artwork-image"
+                    onError={(e) => (e.target.src = placeholderArtwork)}
+                  />
+                </div>
+                <div className="artwork-details">
+                  <h4 className="artwork-title">{artwork.title}</h4>
+                </div>
+              </Link>
             ))}
           </div>
         )}
       </div>
     </div>
   );
-};
-
-export default Profile;
+}

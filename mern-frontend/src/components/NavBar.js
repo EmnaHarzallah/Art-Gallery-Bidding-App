@@ -1,7 +1,16 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 export default function NavBar({ onLogout }) {
+  const { user } = useAuthContext();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    onLogout(); // Appelle la fonction passée en prop (qui supprime token + user)
+    navigate("/login"); // Redirige vers login après logout
+  };
+
   return (
     <nav
       style={{
@@ -28,30 +37,36 @@ export default function NavBar({ onLogout }) {
         >
           Home
         </Link>
-        <Link
-          to="/Profile"
-          style={{ color: "#fff", marginRight: 16, textDecoration: "none" }}
-        >
-          Profile
-        </Link>
+        {user && (
+          <Link
+            to={`/profile/${user.username}`}
+            style={{ color: "#fff", marginRight: 16, textDecoration: "none" }}
+          >
+            Profile
+          </Link>
+        )}
         <Link
           to="/add-art"
           style={{ color: "#fff", marginRight: 16, textDecoration: "none" }}
         >
           Add Art
         </Link>
-        <Link
-          to="/login"
+
+        {/* Bouton de logout */}
+        <button
+          onClick={handleLogout}
           style={{
             background: "transparent",
             border: "none",
             color: "#fff",
             cursor: "pointer",
             fontWeight: "bold",
+            fontSize: "inherit",
+            padding: 0,
           }}
         >
           Logout
-        </Link>
+        </button>
       </div>
     </nav>
   );
